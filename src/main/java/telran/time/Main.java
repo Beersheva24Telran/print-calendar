@@ -19,6 +19,7 @@ public class Main {
 	public static void main(String[] args)  {
 		try {
 			MonthYear monthYear = getMonthYear(args);
+			weekDays = getWeekDays(args);
 			printCalendar(monthYear);
 		} catch (RuntimeException e) {
 			e.printStackTrace();
@@ -110,7 +111,14 @@ public class Main {
 	private static int getFirstDayOfWeek(MonthYear monthYear) {
 		LocalDate ld = LocalDate.of(monthYear.year(), monthYear.month(),
 				1);
-		return ld.get(ChronoField.DAY_OF_WEEK);
+		int delta = getStartDaysDelta(weekDays[0], DayOfWeek.values()[0]);
+		int res = ld.getDayOfWeek().plus(delta).getValue();
+		return res;
+	}
+
+	private static int getStartDaysDelta(DayOfWeek customStartDay, DayOfWeek originalStartDay) {
+		
+		return 7 - (customStartDay.getValue() - originalStartDay.getValue());
 	}
 
 	private static int getLastDayOfMonth(MonthYear monthYear) {
@@ -134,7 +142,28 @@ public class Main {
 		.getDisplayName(TextStyle.FULL, Locale.getDefault());
 System.out.printf("\n%s%s %d\n"," ".repeat(TITLE_OFFSET), monthName, monthYear.year());
 	}
-    
-   
+    private static DayOfWeek[] getWeekDays(String[] args) throws Exception {
+		DayOfWeek startWeekDay = args.length < 3 ? DayOfWeek.of(1) : getStartWeekDay(args[2]);
+		return startWeekDay.getValue() == 1 ? DayOfWeek.values() : getWeekDays(startWeekDay);
+	}
+
+	private static DayOfWeek[] getWeekDays(DayOfWeek startWeekDay) {
+		int nWeekDays = DayOfWeek.values().length;
+		DayOfWeek [] res = new DayOfWeek[nWeekDays];
+		res[0] = startWeekDay;
+		for(int i = 0; i < nWeekDays; i++) {
+			res[i] = startWeekDay.plus(i);
+		}
+		return res;
+	}
+	private static DayOfWeek getStartWeekDay(String dayStr) throws Exception{
+		try {
+			DayOfWeek res = DayOfWeek.valueOf(dayStr.toUpperCase());
+			return res;
+		} catch (Exception e) {
+			throw new Exception("start week day must be an English full week day name");
+		}
+		
+	}
     
 }
